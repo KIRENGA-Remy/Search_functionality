@@ -54,9 +54,15 @@ app.get('/api/search', async(req, res) => {
             return res.status(404).json({ error: "Query is required"})
         }
         const users = await User.find({
-            username: { $regex: query, $options: 'i'}
+            username: { $regex: query, $options: 'i'}  // to prevent case-sensitivity eg: john = JOHN
         }).limit(10);
-        res.json(users)
+        // Return as object with users array
+        res.json({ 
+            users: users.map(user => ({
+                id: user._id.toString(), 
+                username: user.username
+            }))
+        });
     } catch (err) {
         res.status(500).json({ error: 'Server error'})
         console.log("Error while searching user", err);

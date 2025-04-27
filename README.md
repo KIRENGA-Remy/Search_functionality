@@ -43,12 +43,12 @@ cd backend
 npm install
 
 3. **Environment Setup**
-#Create .env file in backend directory
+# Create .env file in backend directory
 MONGODB_URL=your_mongodb_connection_string
 PORT=4321
 
 4. **Running the App**
-#Start the backend server
+# Start the backend server
 cd backend
 npm run dev
 
@@ -80,6 +80,40 @@ Endpoint	  Method	Description
 /api/create	  POST	    Create new user
 
 ![alt text](image.png)
+
+7.  **To test your search API endpoint in Postman**
+# Set Up the Request
+Open Postman
+
+Create a new request (+ button or Ctrl+N)
+
+Set the request method to GET
+
+Enter your API URL: http://localhost:4321/api/search
+
+# Add Query Parameters
+There are two ways to add the search query:
+
+# Method A: URL Parameters (Recommended)
+Click on the Params tab below the URL field
+
+Add a new key-value pair:
+
+Key: query
+
+Value: Your search term (e.g., john)
+
+The URL will automatically update to:
+http://localhost:4321/api/search?query=john
+
+# Method B: Manual URL
+Directly type in the URL with the query parameter:
+http://localhost:4321/api/search?query=john
+
+# Send the Request
+Click the Send button
+
+View the response in the bottom panel
 
 7. **Contributing**
 Fork the project

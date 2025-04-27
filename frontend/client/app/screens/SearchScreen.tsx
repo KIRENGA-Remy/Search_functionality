@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
-import { TextInput, View, FlatList, Text,ActivityIndicator, StyleSheet } from "react-native";
+import { TextInput, View, FlatList, Text,ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 import axios from 'axios'
+
+interface User{
+    id: string;
+    username: string;
+}
+interface ApiResponse{
+    users: User[]
+}
 
 export default function SearchScreen(){
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] =  useState<string | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -20,16 +30,23 @@ export default function SearchScreen(){
 
     const fetchSearchResults = async () => {
         setIsLoading(true);
+        setError(null);
         try {
-            const response = await axios.get('http://localhost:4321/api/search', {
+            const response = await axios.get<ApiResponse>('http://localhost:4321/api/search', {
                 params: { query: searchQuery}
             });
             setResults(response.data.users);
         } catch (err) {
+            setError('Failed to fetch results')
             console.error('Search error:', err)
         } finally {
             setIsLoading(false)
         }
+    }
+    const handleUserSelect = (user: User) => {
+        setSelectedUser(user);
+        setSearchQuery('');
+        setResults([]);
     }
     return(
         <View style={styles.container}>
@@ -40,23 +57,45 @@ export default function SearchScreen(){
             style={styles.input}
             autoFocus
             />
+            { error && <Text style={styles.errorText}>{error}</Text>}
+
+            { selectedUser && (
+                <View style={styles.selectedUserContainer}>
+                    <Text style={styles.selectedUserText}>
+                        Selected: {selectedUser.username}
+                    </Text>
+                </View>
+            )}
             { isLoading ? (
                 <ActivityIndicator style={styles.loader} />
             ) : (
                 <FlatList 
                 data={results}
-                keyExtractor={(item: any) => item.id}
+                keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.resultItem}>
+                    <TouchableOpacity 
+                    style={styles.resultItem}
+                    onPress={() => handleUserSelect(item)}
+                    >
                         <Text style={styles.resultText}>
                             {item.username}
                         </Text>
-                    </View>
+                    </TouchableOpacity>
+                    // <View style={styles.resultItem}>
+                    //     <Text style={styles.resultText}>
+                    //         {item.username}
+                    //     </Text>
+                    // </View>
                 ) }
                 ListEmptyComponent={
-                    <Text style={styles.emptyText}>
-                        { searchQuery ? 'No results found' : 'Search for users'}
-                    </Text>
+                    searchQuery ? (
+                        <Text style={styles.emptyText}>
+                            No results found
+                        </Text>
+                    ) : null
+                    // <Text style={styles.emptyText}>
+                    //     { searchQuery ? 'No results found' : 'Search for users'}
+                    // </Text>
                 }
                 />
             )}
@@ -93,5 +132,20 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
         color: '#888'
+    },
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginBottom: 10
+    },
+    selectedUserContainer: {
+        padding: 16,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        marginBottom: 16
+    },
+    selectedUserText: {
+        fontSize: 16,
+        fontWeight: 'bold'
     }
 })
